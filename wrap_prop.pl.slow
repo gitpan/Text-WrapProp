@@ -1,0 +1,54 @@
+# Here's a politically-correct but slow version of wrap_prop.
+
+sub wrap_prop {
+   my ($text, $width, $ref_width_table) = @_;
+
+   my @width_table = @$ref_width_table;
+
+   return '' if $text eq '';
+
+   # simplify whitespace, including newlines
+   $text =~ s/\s+/ /gs;
+
+   my $cursor = 0; # width so far of line
+   my $out;        # output buffer
+   my $nextline = '';
+
+   while ($text =~ /(.)/gcs) {
+         
+         # don't need leading spaces at start of line
+         next if $nextline eq '' and $1 eq ' ';
+
+         # see if character will fit on line - but don't include if too long
+         if ($cursor + $width_table[ord $1] <= $width) {
+            # another character fits
+            $nextline .= $1;
+            $cursor += $width_table[ord $1];
+         }
+         else {
+            # find where we can wrap by checking backwards for separator
+            my $j = length($nextline);
+            foreach (split '', reverse $nextline) { # find separator
+               $j--;
+               last if /( |:|;|,|\.|-|\(|\)|\/)/o; # separator characters
+            }
+
+            # see if no separator found
+            if (!$j) { # no separator, so just truncate line right here
+               pos($text)--; # rerun on $1
+               $out .= $nextline."\n";
+            }
+            # 
+            else { # separator found, so break line at separator
+               pos($text) -= length($nextline) - $j; # rerun characters after separator
+               $out .= substr($nextline, 0, $j+1)."\n";
+            }
+
+            $nextline = '';
+            $cursor = 0;
+         }
+   }
+
+   $out.$nextline;
+}
+
