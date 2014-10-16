@@ -9,22 +9,18 @@ require Exporter;
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
-@EXPORT = qw( wrap_prop
-	
-);
 
-$VERSION = '0.01';
+@EXPORT_OK = qw( wrap_prop );
+@EXPORT = qw();
 
-# Preloaded methods go here.
-
-# Autoload methods go after =cut, and are processed by the autosplit program.
+$VERSION = '0.04';
 
 1;
 
 sub wrap_prop {
    my ($text, $width, $ref_width_table) = @_;
 
-   my @width_table = @$ref_width_table;
+   my @width_table = @{$ref_width_table};
 
    return '' if $text eq '';
 
@@ -40,9 +36,9 @@ sub wrap_prop {
 
    my $ltext = length $text;
 
-# tried regex scanning, but 50% slower than C-style char processing!
-#  like this... while ($text =~ /(.)/gcs) {
-         
+# In 1998, regex scanning, but 50% slower than C-style char processing. eg. while ($text =~ /(.)/gcs) {
+# In 2014, they're equally fast. See eg/NOTES.
+
    while ($i < $ltext) {
          # pop off next character
          $c    = substr($text,$i++,1);
@@ -91,11 +87,9 @@ Text::WrapProp - proportional line wrapping to form simple paragraphs
 
 =head1 SYNOPSIS 
 
-	use Text::WrapProp
+	use Text::WrapProp qw(wrap_prop);
 
 	print wrap_prop($text, $width, $ref_width_table);
-
-	use Text::WrapProp qw(wrap_prop);
 
 =head1 DESCRIPTION
 
@@ -114,7 +108,12 @@ performed as the browser performs the calculations automatically.
 
 =head1 EXAMPLE
 
-	my @width_table = (0.05) x 256;
+	use strict;
+	use diagnostics;
+	
+	use Text::WrapProp qw(wrap_prop);
+
+	my @width_table = 0.05 x 256;
 	print wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
 
 =head1 BUGS
@@ -125,6 +124,6 @@ behavior was to die.  Now the word is split at line-length.
 
 =head1 AUTHOR
 
-James Briggs <71022.3700@compuserve.com>, styled after Text::Wrap.
+James Briggs <james.briggs@yahoo.com>. Styled after Text::Wrap.
 
 =cut

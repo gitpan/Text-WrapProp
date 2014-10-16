@@ -1,4 +1,17 @@
-# Here's a politically-correct but slow version of wrap_prop.
+#!/usr/bin/perl
+
+# Program: wrap_prop-regex_slow.pl
+# Author: James Briggs
+# Date: Mon Sep 28 09:02:05 1998
+# Env: Perl5
+# Purpose: regex-powerered but slow version of the Text::WrapProp::wrap_prop subroutine
+
+   use strict;
+   use diagnostics;
+
+   my @width_table = (0.05) x 256;
+
+   print wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
 
 sub wrap_prop {
    my ($text, $width, $ref_width_table) = @_;
