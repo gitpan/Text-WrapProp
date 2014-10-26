@@ -11,7 +11,9 @@
 
    my @width_table = (0.05) x 256;
 
-   print wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
+   for (1..1000) {
+       my $s = wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
+   }
 
 sub wrap_prop {
    my ($text, $width, $ref_width_table) = @_;

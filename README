@@ -1,4 +1,4 @@
-Text-WrapProp version 0.04
+Text-WrapProp version 0.05
 ==========================
 
 Text::WrapProp - proportional line wrapping to form simple paragraphs
@@ -10,9 +10,7 @@ the full width of your output device. A reference to a character width table
 must also be supplied. The width units can be any metric you choose, as long as
 the column width and the width table use the same metric.
 
-Proportional wrapping is most commonly used in the publishing industry. In the
-HTML age, custom proportional wrapping is less often performed as the browser
-performs the calculations automatically.
+Proportional wrapping is most commonly used in the publishing industry.
 
 INSTALLATION
 
@@ -28,8 +26,6 @@ DEPENDENCIES
 None
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 1998, James Briggs
 

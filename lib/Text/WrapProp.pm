@@ -13,41 +13,48 @@ require Exporter;
 @EXPORT_OK = qw( wrap_prop );
 @EXPORT = qw();
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 1;
 
 sub wrap_prop {
    my ($text, $width, $ref_width_table) = @_;
 
-   my @width_table = @{$ref_width_table};
+   if (not defined $text) {
+      return('', 1);
+   }
+   elsif (not defined $width or $width < 0.0000001) {
+      return('', 2);
+   }
+   elsif (not defined $ref_width_table or ref($ref_width_table) ne 'ARRAY' or scalar(@{$ref_width_table}) <= 1) {
+      return('', 3);
+   }
+   elsif ($text eq '') {
+      return('', 0);
+   }
 
-   return '' if $text eq '';
+   my @width_table = @{$ref_width_table};
 
    # simplify whitespace, including newlines
    $text =~ s/\s+/ /gs;
 
-   my $cursor = 0; # width so far of line
-   my $c;          # current character
-   my $out;        # output buffer
+   my $c;            # current character
+   my $ltext    = length $text;
+   my $cursor   = 0; # width so far of line
+   my $out      = ''; # output buffer
    my $nextline = '';
 
    my $i=0;
 
-   my $ltext = length $text;
-
-# In 1998, regex scanning, but 50% slower than C-style char processing. eg. while ($text =~ /(.)/gcs) {
-# In 2014, they're equally fast. See eg/NOTES.
-
    while ($i < $ltext) {
          # pop off next character
-         $c    = substr($text,$i++,1);
+         $c = substr($text, $i++, 1);
          
          # don't need leading spaces at start of line
          next if $nextline eq '' and $c eq ' ';
 
          # see if character will fit on line - but don't include if too long
-         if ($cursor + $width_table[ord $c] <= $width) {
+         if ($cursor + $width_table[ord $c] < $width + 0.0000001) {
             # another character fits
             $nextline .= $c;
             $cursor += $width_table[ord $c];
@@ -55,9 +62,10 @@ sub wrap_prop {
          else {
             # find where we can wrap by checking backwards for separator
             my $j = length($nextline);
-            foreach (split '', reverse $nextline) { # find separator
+            for (split //, reverse $nextline) { # find separator
                $j--;
-               last if /( |:|;|,|\.|-|\(|\)|\/)/o; # separator characters
+#               last if /( |:|;|,|\.|-|\(|\)|\/)/o; # separator characters
+               last if /[ :;,.()\\\/-]/; # separator characters
             }
 
             # see if no separator found
@@ -74,9 +82,10 @@ sub wrap_prop {
             $nextline = '';
             $cursor = 0;
          }
+# print "i=$i, ltext=$ltext, cursor=$cursor, out=$out\n\n";
    }
 
-   $out.$nextline;
+   return($out.$nextline, 0);
 }
 
 __END__
@@ -87,9 +96,10 @@ Text::WrapProp - proportional line wrapping to form simple paragraphs
 
 =head1 SYNOPSIS 
 
-	use Text::WrapProp qw(wrap_prop);
+ use Text::WrapProp qw(wrap_prop);
 
-	print wrap_prop($text, $width, $ref_width_table);
+ my ($output, $status) = wrap_prop($text, $width, $ref_width_table);
+ print $output if !$status;
 
 =head1 DESCRIPTION
 
@@ -102,19 +112,26 @@ character width table must also be supplied. The width units
 can be any metric you choose, as long as the column width and
 the width table use the same metric.
 
-Proportional wrapping is most commonly used in the publishing
-industry. In the HTML age, custom proportional wrapping is less often
+Proportional wrapping is commonly used in the publishing
+industry. In HTML, custom proportional wrapping is less often
 performed as the browser performs the calculations automatically.
 
-=head1 EXAMPLE
+=head1 RETURN VALUES
 
-	use strict;
-	use diagnostics;
-	
-	use Text::WrapProp qw(wrap_prop);
+wrap_prop returns a list: (text string, integer status). For invalid parameters, the empty string '' and a non-zero status.
 
-	my @width_table = 0.05 x 256;
-	print wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
+=head1 EXAMPLES
+
+ use strict;
+ use diagnostics;
+
+ use Text::WrapProp qw(wrap_prop);
+
+ my @width_table = (0.05) x 256;
+ my ($output, $status) = wrap_prop("This is a bit of text that forms a normal book-style paragraph. Supercajafrajalisticexpialadocious!", 4.00, \@width_table);
+ print $output if !$status;
+
+See eg/ for more examples.
 
 =head1 BUGS
 
@@ -124,6 +141,6 @@ behavior was to die.  Now the word is split at line-length.
 
 =head1 AUTHOR
 
-James Briggs <james.briggs@yahoo.com>. Styled after Text::Wrap.
+James Briggs E<lt>james.briggs@yahoo.comE<gt>. Styled after Text::Wrap.
 
 =cut
